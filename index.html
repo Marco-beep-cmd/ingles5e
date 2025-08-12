@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Body Parts for Kids — Learn & Practice</title>
+<link rel="shortcut icon" href="logo.png" type="image/x-icon">
+<style>
+  :root{
+    --bg:#f7feff; --primary:#0b7285; --card:#fff; --accent:#a6e3e9;
+  }
+  body{font-family: 'Segoe UI', Roboto, Arial, sans-serif; background:var(--bg); margin:0; color:#03363d;}
+  header{background:linear-gradient(90deg,var(--primary),#086f83); color:#fff; padding:18px 16px; text-align:center;}
+  header h1{margin:0;font-size:1.6rem}
+  .container{max-width:980px;margin:18px auto;padding:0 16px;}
+  .intro{text-align:center;margin-bottom:12px}
+  .grid{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;}
+  .card{background:var(--card);border-radius:12px;padding:12px;width:140px;box-shadow:0 6px 14px rgba(2,38,46,0.08);text-align:center;cursor:pointer;user-select:none;}
+  .card img{width:86px;height:86px;object-fit:contain;margin-bottom:8px}
+  .card p{margin:4px 0 0;font-weight:600;color:#024f56}
+  .card:active{transform:translateY(2px)}
+  .section{margin:18px 0;padding:12px;background:linear-gradient(180deg,#ffffff, #f0ffff);border-radius:12px;box-shadow:0 4px 10px rgba(2,38,46,0.04)}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+  button{background:var(--primary);color:white;padding:8px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:600}
+  button.secondary{background:#0b8aa3}
+  .feedback{margin-top:10px;text-align:center;font-weight:700}
+  .small{font-size:0.9rem;color:#03505a}
+  .choices{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+  .choice{padding:8px 10px;border-radius:8px;background:#e8fbff;border:2px solid transparent;cursor:pointer;min-width:110px;text-align:center}
+  .choice.correct{border-color:green;background:#eaffef}
+  .choice.wrong{border-color:red;background:#ffecec}
+  .result{font-size:1.1rem;font-weight:800;text-align:center;margin-top:12px}
+  .review-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:10px}
+  .rev-item{padding:8px;background:#fff;border-radius:8px;border:1px solid #e6f6f8;display:flex;gap:8px;align-items:center}
+  .rev-item img{width:48px;height:48px;object-fit:contain}
+  footer{text-align:center;color:#025b65;padding:16px;margin-top:18px;font-size:0.9rem}
+  @media (max-width:520px){ .card{width:120px} }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Body Parts for Kids — Learn, Listen & Play</h1>
+  <div class="small">Click a picture to hear the word — luego practica con los ejercicios</div>
+</header>
+
+<main class="container">
+
+  <!-- LEARN -->
+  <section class="section" id="learn">
+    <h2 style="text-align:center;margin:0 0 8px">Learn — Parts of the body</h2>
+    <p class="intro small">Toca una tarjeta para escuchar la pronunciación correcta.</p>
+
+    <div class="grid" id="cards"></div>
+
+    <div class="controls" style="margin-top:10px">
+      <button id="speakAll">Speak All (Repasar)</button>
+      <button class="secondary" id="shuffleSpeak">Speak Random</button>
+    </div>
+  </section>
+
+  <!-- EXERCISE 1: LISTEN & CLICK -->
+  <section class="section" id="exercise1">
+    <h2>Exercise 1 — Listen & Click</h2>
+    <p class="small">Escucha la palabra y toca la imagen correcta.</p>
+    <div style="text-align:center;margin-top:10px">
+      <button id="startListen">Start / Next</button>
+      <button class="secondary" id="stopListen">Stop</button>
+    </div>
+    <div class="feedback" id="listenFeedback"></div>
+    <div class="grid" id="listenGrid" style="margin-top:12px"></div>
+    <div style="text-align:center;margin-top:8px">
+      <button id="resetListen" class="secondary">Reiniciar ejercicio 1</button>
+    </div>
+  </section>
+
+  <!-- EXERCISE 2: QUIZ -->
+  <section class="section" id="quiz">
+    <h2>Exercise 2 — Mini-Quiz</h2>
+    <p class="small">Escucha y elige la respuesta correcta. 5 preguntas.</p>
+    <div style="text-align:center">
+      <button id="startQuiz">Start Quiz</button>
+      <button id="nextQuestion" class="secondary" style="display:none">Next</button>
+    </div>
+    <div id="quizArea" style="margin-top:12px;text-align:center"></div>
+    <div id="quizResult" class="result"></div>
+    <div style="text-align:center;margin-top:8px">
+      <button id="restartQuiz" class="secondary" style="display:none">Restart Quiz</button>
+    </div>
+  </section>
+
+  <!-- REVIEW -->
+  <section class="section" id="review">
+    <h2>Repaso — Todas las partes</h2>
+    <p class="small">Haz clic en el altavoz para oírlas otra vez.</p>
+    <div class="review-list" id="reviewList"></div>
+  </section>
+
+</main>
+
+<footer>
+  Diseñado para niños de inicial — partes del cuerpo en inglés.
+</footer>
+
+<script>
+  // Audios reales
+  const audioMap = {
+    head: "https://ssl.gstatic.com/dictionary/static/sounds/oxford/head--_gb_1.mp3",
+    eye: "https://ssl.gstatic.com/dictionary/static/sounds/oxford/eye--_gb_1.mp3",
+    ear: "https://ssl.gstatic.com/dictionary/static/sounds/oxford/ear--_gb_1.mp3",
+    nose: "https://ssl.gstatic.com/dictionary/static/sounds/oxford/nose--_gb_1.mp3",
+    mouth: "https://ssl.gstatic.com/dictionary/static/sounds/oxford/mouth--_gb_1.mp3",
+    hand: "https://ssl.gstatic.com/dictionary/static/sounds/oxford/hand--_gb_1.mp3",
+    arm: "https://ssl.gstatic.com/dictionary/static/sounds/oxford/arm--_gb_1.mp3",
+    leg: "https://ssl.gstatic.com/dictionary/static/sounds/oxford/leg--_gb_1.mp3",
+    foot: "https://ssl.gstatic.com/dictionary/static/sounds/oxford/foot--_gb_1.mp3"
+  };
+
+  const words = [
+    {key:'head', label:'Head', img:'hair.png'},
+    {key:'eye', label:'Eye', img:'eye.png'},
+    {key:'ear', label:'Ear', img:'ear.png'},
+    {key:'nose', label:'Nose', img:'nose.png'},
+    {key:'mouth', label:'Mouth', img:'mouth.png'},
+    {key:'hand', label:'Hand', img:'hand.png'},
+    {key:'arm', label:'Arm', img:'arm.png'},
+    {key:'leg', label:'Leg', img:'leg.png'},
+    {key:'foot', label:'Foot', img:'foot.png'}
+  ];
+
+  function playSound(key) {
+    const audio = new Audio(audioMap[key]);
+    audio.play();
+  }
+
+  // LEARN
+  const cardsEl = document.getElementById('cards');
+  words.forEach(w=>{
+    const div = document.createElement('div');
+    div.className='card';
+    div.innerHTML = `<img src="${w.img}" alt="${w.label}"><p>${w.label}</p>`;
+    div.addEventListener('click', ()=>{ playSound(w.key); });
+    cardsEl.appendChild(div);
+  });
+
+  document.getElementById('speakAll').addEventListener('click', async ()=>{
+    for(const w of words){
+      playSound(w.key);
+      await wait(1000);
+    }
+  });
+
+  document.getElementById('shuffleSpeak').addEventListener('click', async ()=>{
+    const shuffled = words.slice().sort(()=>Math.random()-0.5);
+    for(const w of shuffled.slice(0,6)){
+      playSound(w.key);
+      await wait(1000);
+    }
+  });
+
+  function wait(ms){ return new Promise(res=>setTimeout(res,ms)); }
+
+  // EXERCISE 1
+  const listenGrid = document.getElementById('listenGrid');
+  const listenFeedback = document.getElementById('listenFeedback');
+  let currentListen = null;
+
+  function renderListenGrid(){
+    listenGrid.innerHTML='';
+    const shuffled = words.slice().sort(()=>Math.random()-0.5);
+    shuffled.forEach(w=>{
+      const c = document.createElement('div');
+      c.className='card';
+      c.innerHTML = `<img src="${w.img}" alt="${w.label}"><p>${w.label}</p>`;
+      c.addEventListener('click', ()=> checkListen(w,c));
+      listenGrid.appendChild(c);
+    });
+  }
+
+  function checkListen(wordObj, cardEl){
+    if(!currentListen) return;
+    if(wordObj.key === currentListen.key){
+      listenFeedback.textContent = '✔️ Great! Correct!';
+      cardEl.style.border = '3px solid #2ecc71';
+      playSound('head'); // sonido de "bien" (opcional)
+    } else {
+      listenFeedback.textContent = '❌ Try again!';
+      cardEl.style.border = '3px solid #e85a4f';
+    }
+  }
+
+  document.getElementById('startListen').addEventListener('click', ()=>{
+    currentListen = words[Math.floor(Math.random()*words.length)];
+    playSound(currentListen.key);
+    listenFeedback.textContent = 'Listen and touch the correct picture';
+    renderListenGrid();
+  });
+
+  document.getElementById('stopListen').addEventListener('click', ()=>{
+    listenFeedback.textContent = 'Stopped';
+  });
+
+  document.getElementById('resetListen').addEventListener('click', ()=>{
+    currentListen = null;
+    listenFeedback.textContent = '';
+    listenGrid.innerHTML = '';
+  });
+
+  // QUIZ
+  const quizArea = document.getElementById('quizArea');
+  const quizResult = document.getElementById('quizResult');
+  const startQuizBtn = document.getElementById('startQuiz');
+  const nextBtn = document.getElementById('nextQuestion');
+  const restartQuizBtn = document.getElementById('restartQuiz');
+
+  let quizQuestions = [];
+  let qi = 0;
+  let score = 0;
+  let quizAnswers = [];
+
+  function makeQuiz(){
+    const pool = words.slice().sort(()=>Math.random()-0.5);
+    return pool.slice(0,5).map(w=>{
+      const others = words.filter(x=>x.key!==w.key).sort(()=>Math.random()-0.5).slice(0,3);
+      return {word:w, options:[w,...others].sort(()=>Math.random()-0.5)};
+    });
+  }
+
+  function showQuestion(){
+    quizArea.innerHTML='';
+    const q = quizQuestions[qi];
+    const title = document.createElement('div');
+    title.innerHTML = `<div style="font-weight:800">Question ${qi+1} of ${quizQuestions.length}</div>
+                       <div class="small" style="margin-top:6px">Listen and choose the correct word</div>
+                       <div style="margin-top:8px"><button id="playQ">🔊 Play</button></div>`;
+    quizArea.appendChild(title);
+
+    document.getElementById('playQ').addEventListener('click', ()=>playSound(q.word.key));
+
+    const choices = document.createElement('div');
+    choices.className='choices';
+    q.options.forEach(opt=>{
+      const ch = document.createElement('div');
+      ch.className='choice';
+      ch.textContent = opt.label;
+      ch.addEventListener('click', ()=> selectOption(opt, ch));
+      choices.appendChild(ch);
+    });
+    quizArea.appendChild(choices);
+  }
+
+  function selectOption(opt, el){
+    const q = quizQuestions[qi];
+    Array.from(document.querySelectorAll('.choice')).forEach(c=>c.style.pointerEvents='none');
+    if(q.word.key === opt.key){
+      el.classList.add('correct');
+      score++;
+    } else {
+      el.classList.add('wrong');
+      Array.from(document.querySelectorAll('.choice')).forEach(c=>{
+        if(c.textContent === q.word.label) c.classList.add('correct');
+      });
+    }
+    quizAnswers.push({q:q.word.label, selected:opt.label, correct:q.word.label});
+    nextBtn.style.display='inline-block';
+    if(qi === quizQuestions.length-1){
+      nextBtn.textContent='See Results';
+    } else {
+      nextBtn.textContent='Next';
+    }
+  }
+
+  nextBtn.addEventListener('click', ()=>{
+    qi++;
+    if(qi < quizQuestions.length){
+      showQuestion();
+      nextBtn.style.display='none';
+    } else {
+      finishQuiz();
+    }
+  });
+
+  startQuizBtn.addEventListener('click', ()=>{
+    quizQuestions = makeQuiz();
+    qi = 0; score = 0; quizAnswers = [];
+    startQuizBtn.style.display='none';
+    nextBtn.style.display='none';
+    restartQuizBtn.style.display='none';
+    quizResult.textContent='';
+    showQuestion();
+  });
+
+  function finishQuiz(){
+    quizArea.innerHTML='';
+    startQuizBtn.style.display='inline-block';
+    nextBtn.style.display='none';
+    restartQuizBtn.style.display='inline-block';
+    quizResult.textContent = `You scored ${score} / ${quizQuestions.length}`;
+  }
+
+  restartQuizBtn.addEventListener('click', ()=>{
+    startQuizBtn.click();
+  });
+
+  // REVIEW
+  const reviewList = document.getElementById('reviewList');
+  words.forEach(w=>{
+    const item = document.createElement('div');
+    item.className='rev-item';
+    item.innerHTML = `<img src="${w.img}" alt="${w.label}"><div style="flex:1"><div style="font-weight:800">${w.label}</div>
+                      <div style="margin-top:6px"><button class="speakBtn">🔊 Speak</button></div></div>`;
+    item.querySelector('.speakBtn').addEventListener('click', ()=>playSound(w.key));
+    reviewList.appendChild(item);
+  });
+
+  renderListenGrid();
+</script>
+
+</body>
+</html>
